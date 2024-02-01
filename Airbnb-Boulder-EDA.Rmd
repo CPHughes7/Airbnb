@@ -1,0 +1,181 @@
+---
+title: "Airbnb-Boulder-EDA"
+output: pdf_document
+date: "2023-12-13"
+---
+
+# Intro
+This analysis looks at the ***** 80301 Zipcode of Unincorporated Boulder County. Nevertheless, this is moduraliized to fit whatever city or area. 
+
+## Libraries 
+```{r include=FALSE}
+library('tidyverse')
+```
+
+## Import Data
+This notebook incorporates a few different sites to perform a better model 
+
+https://www.airbnb.com/host/homes?src_section=342893&c=.pi80.pkb21uaS80LzU3OTYw&euid=3d724216-eaba-8ba5-dd4f-8f01752d073b&room_type=ENTIRE_HOME
+
+https://app.airdna.co/data/us/59323?tab=performance
+
+### Information based on Equivalent property. 
+  -equivalent property == 1-2 bedroom, independent, whole unit
+
+## Occupancy Dataframe
+
+TODO: determine if occupancy is necessary to include; if so... 
+TODO: separate into an object in an instance (driver code)
+
+Thus,a seasonal trend line has been encoded to scale between 50% and 80% weighted based on the season. The price is adjusted as well between 120 and 170.  . 
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Define the income parameters
+occupancy_rate_low_season <- 0.5
+occupancy_rate_high_season <- 0.8  
+nightly_rate_low_season <- 120
+nightly_rate_high_season <- 170 
+months <- 1:12
+days_in_month <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
+# Create a data frame to store the results
+result_df <- data.frame(Month = integer(), Revenue = numeric())
+```
+
+## Revenue Data
+
+Here, a revenue class weights attributes  
+  1. high season 
+  2. low season 
+  3. transitional seasons linking the two.
+
+```{r Revenue}
+# Define Revenue class
+Revenue <- setClass(
+  "Revenue",
+  slots = list(
+    nightly_rate_high_season = "numeric",
+    nightly_rate_low_season = "numeric",
+    occupancy_rate_high_season = "numeric",
+    occupancy_rate_low_season = "numeric",
+    days_in_month = "list"
+  )
+)
+
+# Function to calculate monthly revenue
+calculateMonthlyRevenue <- function(month, revenueObj) {
+  days <- revenueObj@days_in_month[[month]]
+  nightlyRate <- ifelse(month %in% c(6, 7, 8, 9), revenueObj@nightly_rate_high_season, revenueObj@nightly_rate_low_season)
+  occupancyRate <- ifelse(month %in% c(12, 1, 2), revenueObj@occupancy_rate_low_season, revenueObj@occupancy_rate_high_season)
+  revenue <- occupancyRate * nightlyRate * days
+  return(revenue)
+}
+
+```
+
+### Instance
+```{r}
+#Instnace usage for revenue
+localRevenue <- Revenue(
+  nightly_rate_high_season = 150,
+  nightly_rate_low_season = 100,
+  occupancy_rate_high_season = 0.8,
+  occupancy_rate_low_season = 0.6,
+  days_in_month = list(January = 31, February = 28, March = 31, April = 30, May = 31, June = 30, 
+                       July = 31, August = 31, September = 30, October = 31, November = 30, December = 31)
+)
+
+# Initialize an empty tibble
+result_df <- tibble::tibble(Month = character(), Revenue = numeric())
+
+# Calculate revenue for each month
+for (month in names(localRevenue@days_in_month)) {
+  revenue <- calculateMonthlyRevenue(month, localRevenue)
+  result_df <- tibble::add_row(result_df, Month = month, Revenue = revenue)
+}
+
+# Display the result_df tibble
+result_df
+```
+
+## Expense Data 
+
+Here, an Expense class weights attributes  
+  1. fee of management company. 
+  2. business expense
+  3. misc expenses 
+```{r}
+# Define Expenses class; Refacotr where misc_expenses = "list"
+Expenses <- setClass(
+  "Expenses",
+  slots = list(
+    management_expenses = "numeric",
+    airbnb_fee = "numeric"
+  )
+)
+
+# Function to calculate total expenses
+calculateTotalExpenses <- function(revenue, expensesObj) {
+  managementExpenses <- revenue * expensesObj@management_expenses
+  miscExpenses <- sum(unlist(expensesObj@misc_expenses))
+  totalExpenses <- managementExpenses + miscExpenses
+  return(totalExpenses)
+}
+```
+### Instance
+```{r}
+# Example usage for short-term rental
+localExpenses <- Expenses(
+  management_expenses = 0.82,
+  airbnb_fee = 0.00
+  #misc_expenses = list(Food = 1000, Appliances = 100, Gas = 10)
+)
+
+```
+
+
+## Income Data 
+
+Function of the two previous functions. 
+
+TODO: Still has to be transformed.
+
+```{r}
+# Function to calculate rental revenue
+calculateRentalRevenue <- function(dailyRate, numberOfDays) {
+  revenue <- dailyRate * numberOfDays
+  return(revenue)
+}
+
+# Function to calculate rental expenses
+calculateRentalExpenses <- function(costPerDay, numberOfDays) {
+  expenses <- costPerDay * numberOfDays
+  return(expenses)
+}
+
+# Function to calculate rental income
+calculateRentalIncome <- function(revenue, expenses) {
+  income <- revenue - expenses
+  return(income)
+}
+```
+
+## Including Plots
+```{r Plots, echo=FALSE}
+ggplot(result_df, aes(x = Month, y = Revenue)) +
+  geom_line() +
+  labs(title = 'Monthly Revenue Based on Seasonal Occupancy and Nightly Rates',
+       x = 'Month',
+       y = 'Revenue') +
+  theme_minimal() +
+  scale_x_discrete(labels = month.name)
+```
+
+## Footnote:
+
+-Due to limitations of available and reliable data, incomplete comparisons, and other confounders this representation will be incomplete, yet will still serve as a template to make future decisions with similar circumstances. 
+
+# Reminder 
+
+Utilize this model as leverage for pricing, since its something which can be done in an automated way. Thus, Shannon's time may be nulled by some executable scripts. The only caveat is I need her info/data. 
