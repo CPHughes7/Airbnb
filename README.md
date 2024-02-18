@@ -8,11 +8,12 @@ This repository contains scripts and notebooks for analyzing Airbnb rental data.
 
 - **Notebooks:**
   - `data_preprocessing.ipynb`: Preprocessing steps for cleaning and organizing Airbnb rental data.
-  - `exploratory_analysis.ipynb`: Exploratory data analysis with visualizations and insights.
-  - `rental_trends.ipynb`: Analysis of long-term rental trends based on Airbnb data.
+  - `Airbnb-EDA.Rmd`: Exploratory data analysis with visualizations and insights.
 
 - **Data:**
   - `/kaggle/input/us-airbnb-open-data/AB_US_2023.csv`:
+  - https://www.airbnb.com/host/homes?src_section=342893&c=.pi80.pkb21uaS80LzU3OTYw&euid=3d724216-eaba-8ba5-dd4f-8f01752d073b&room_type=ENTIRE_HOME
+  - https://app.airdna.co/data/us/59323?tab=performance
 
 ## Getting Started
 
