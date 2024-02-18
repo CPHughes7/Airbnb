@@ -11,13 +11,8 @@ This repository contains scripts and notebooks for analyzing Airbnb rental data.
   - `exploratory_analysis.ipynb`: Exploratory data analysis with visualizations and insights.
   - `rental_trends.ipynb`: Analysis of long-term rental trends based on Airbnb data.
 
-- **Scripts:**
-  - `data_collection.py`: Python script for collecting data from the Airbnb API.
-  - `data_visualization.R`: R script for creating interactive visualizations.
-
 - **Data:**
   - `/kaggle/input/us-airbnb-open-data/AB_US_2023.csv`:
-  - `/enter.csv/`: Cleaned and processed data for analysis.
 
 ## Getting Started
 
